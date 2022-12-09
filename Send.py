@@ -1,24 +1,52 @@
+# rasberry pi 필수 설치 
+# pip 설치 
+# pip install bs4 (BeautifulSoup)
+# sudo pip install firebase-admin
+
 import serial 
 import time
 import requests
 from bs4 import BeautifulSoup
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 
-#print(Wolpyeong_chroline)
-#print(Wolpyeong_pH)
-#print(Wolpyeong_NTU)
-#print()
-#print(songchon_chroline)
-#print(songchon_pH)
-#print(songchon_NTU)
-#print()
-#print(shintanjin_chroline)
-#print(shintanjin_pH)
-#print(shintanjin_NTU)
-#print()
+cred = credentials.Certificate('firebase-sdk.json')
+
+firebase_admin.initialize_app(cred, {
+	'databaseURL' : 'https://bumrang-36405-default-rtdb.asia-southeast1.firebasedatabase.app'
+})
+
+##데이터 베이스 초기 설정 
+#ref =db.reference('/')
+#ref.set({
+#
+#    "Total_Data" :  {
+#            "Wolpyeongdong" : {
+#                "chroline" : "0",
+#                "pH" : "0",
+#                "NTU" : "0"
+#            },
+#            "songchondong" : {
+#                "chroline" : "0",
+#                "pH" : "0",
+#                "NTU" : "0"
+#            },
+#            "shintanjin" : {
+#                "chroline" : "0",
+#                "pH" : "0",
+#                "NTU" : "0"
+#            },
+#            "semisosa" : {
+#                "tubility" : "0",
+#                "temperature" : "0"
+#            }
+#        }
+#})
 
 py_serial = serial.Serial(
     #Window
-    port ='COM5',
+    port ='COM8',
 
     # 보드 레이트(통신 속도)
     baudrate = 9600,
@@ -69,13 +97,7 @@ while True:
     print(shintanjin_chroline)
     print(shintanjin_pH)
     print(shintanjin_NTU)
-    print()
-      
-    #commend = input('아두이노에게 내릴 명령:')
-    
-    #py_serial.write(commend.encode())
-    
-    #time.sleep(0.1)
+    print()    
     
     if py_serial.readable():
         
@@ -83,12 +105,41 @@ while True:
         # BYTE 단위로 받은 response 모습 : b'\xec\x97\x86\xec\x9d\x8c\r\n'
         #response = py_serial.readline()
         tubility_data = py_serial.readline() #습도 데이터 받음 
-        celcius_data = py_serial.readline()  #온도 데이터 받음 
+        temperature_data = py_serial.readline()  #온도 데이터 받음 
         
         # 디코딩 후, 출력 (가장 끝의 \n을 없애주기위해 슬라이싱 사용)
         #print(response[:len(response)-1].decode())
         print(tubility_data[:len(tubility_data)-1].decode()) #타입 str
-        print(celcius_data[:len(celcius_data)-1].decode())   #타입 str
+        print(temperature_data[:len(temperature_data)-1].decode())   #타입 str
+        
+        #디코딩한 값 저장 
+        semisosa_tubility = tubility_data[:len(tubility_data)-1].decode()
+        semisosa_temperature = temperature_data[:len(temperature_data)-1].decode()
+
+    #updating data
+    ref =db.reference("Total_Data")
+    ref.update({
+        
+        #월평동 데이터 갱신
+        "Wolpyeongdong/chroline":Wolpyeong_chroline,
+        "Wolpyeongdong/pH":Wolpyeong_pH,
+        "Wolpyeongdong/NTU":Wolpyeong_NTU,
+
+        #신탄진 데이터 갱신 
+        "shintanjin/chroline": shintanjin_chroline,
+        "shintanjin/NTU": shintanjin_NTU,
+        "shintanjin/pH": shintanjin_pH,
+
+        #송촌동 데이터 갱신 
+        "songchondong/chroline": songchon_chroline,
+        "songchondong/NTU":songchon_NTU,
+        "songchondong/pH":songchon_pH,
+        
+        #음수대[세미소사] 데이터 갱신 
+        "semisosa/tubility" :semisosa_tubility,
+        "semisosa/temperature" : semisosa_temperature
+    })
     
-    #5초마다 대이터 갱신 
+    #5초마다 데이터 갱신 
     time.sleep(5) 
+
