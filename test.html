@@ -1,0 +1,598 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>대전시 실시간 정수장 수질</title>
+    <script type="text/javascript" src="/wps/std/js/jquery-1.6.2.js"></script>
+    <link
+      href="/wps/std/css/default/global3.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="/wps/std/css/default/local.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="/wps/std/css/default/css3-github-buttons.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <style type="text/css">
+      #contents_box .map {
+        background: url("/wps/std/images/default/local/daejeon/map.png")
+          no-repeat;
+      }
+      /*지도 각 포인트의 좌표 설정*/
+
+      .map_point_no1_good {
+        left: 480px;
+        top: 110px;
+        background: url("/wps/std/images/default/map/icon_0.png") no-repeat;
+      }
+      .map_point_no1_ng {
+        left: 480px;
+        top: 110px;
+        background: url("/wps/std/images/default/map/icon_1.png") no-repeat;
+      }
+      .map_point_no1_check {
+        left: 480px;
+        top: 110px;
+        background: url("/wps/std/images/default/map/icon_2.png") no-repeat;
+      }
+
+      .map_point_no2_good {
+        left: 430px;
+        top: 190px;
+        background: url("/wps/std/images/default/map/icon_0.png") no-repeat;
+      }
+      .map_point_no2_ng {
+        left: 430px;
+        top: 190px;
+        background: url("/wps/std/images/default/map/icon_1.png") no-repeat;
+      }
+      .map_point_no2_check {
+        left: 430px;
+        top: 190px;
+        background: url("/wps/std/images/default/map/icon_2.png") no-repeat;
+      }
+
+      .map_point_no3_good {
+        left: 430px;
+        top: 190px;
+        background: url("/wps/std/images/default/map/icon_0.png") no-repeat;
+      }
+      .map_point_no3_ng {
+        left: 430px;
+        top: 190px;
+        background: url("/wps/std/images/default/map/icon_1.png") no-repeat;
+      }
+      .map_point_no3_check {
+        left: 430px;
+        top: 190px;
+        background: url("/wps/std/images/default/map/icon_2.png") no-repeat;
+      }
+
+      .map_point_no4_good {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_0.png") no-repeat;
+      }
+      .map_point_no4_ng {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_1.png") no-repeat;
+      }
+      .map_point_no4_check {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_2.png") no-repeat;
+      }
+
+      .map_point_no5_good {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_0.png") no-repeat;
+      }
+      .map_point_no5_ng {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_1.png") no-repeat;
+      }
+      .map_point_no5_check {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_2.png") no-repeat;
+      }
+
+      .map_point_no6_good {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_0.png") no-repeat;
+      }
+      .map_point_no6_ng {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_1.png") no-repeat;
+      }
+      .map_point_no6_check {
+        left: 300px;
+        top: 260px;
+        background: url("/wps/std/images/default/map/icon_2.png") no-repeat;
+      }
+    </style>
+    <script
+      type="text/javascript"
+      src="/wps/std/js/default/map_script.js"
+    ></script>
+    <script type="text/javascript">
+      function start() {
+        preloadImage();
+        setRefreshTime();
+      }
+
+      /*
+       * JSON 데이터를 파싱하여, 각 필요한 위치로 업데이트 할 것.
+       */
+      var gi = 1;
+      function refreshJsonData(data) {
+        var obj = eval("(" + data + ")"); // json파싱을 위해서 eval를 사용할 때는, 양쪽에 괄호 씌워줄 것.
+        $("#update_time").html(obj.refresh_time);
+
+        for (var i = 0; i < obj.plant_infos.length; i++) {
+          var v = obj.plant_infos[i];
+          $("#" + v.plant_code + "RC00").html(v.rc00 + gi);
+          $("#" + v.plant_code + "PH00").html(v.ph00 + gi);
+          $("#" + v.plant_code + "TURB").html(v.turb + gi);
+          gi++;
+        }
+      }
+
+      function check2(n) {
+        var str = n.toString();
+        if (str.length <= 1) return "0" + str;
+        return str;
+      }
+
+      function setRefreshTime() {
+        var date = new Date();
+        var refresh_time =
+          date.getFullYear() +
+          "/" +
+          check2(date.getMonth() + 1) +
+          "/" +
+          check2(date.getDate()) +
+          " " +
+          check2(date.getHours()) +
+          ":" +
+          check2(date.getMinutes()) +
+          ":" +
+          check2(date.getSeconds());
+        $("#update_time").html(refresh_time);
+      }
+    </script>
+  </head>
+  <body onload="javascript:start();">
+    <div id="wrapper">
+      <div id="headerWrap">
+        <div id="header">
+          <!-- 2012.10.24 시안 변경으로 수정처리 -->
+          <h1>
+            <a href="/" title="첫 화면으로 이동"
+              ><img
+                src="/wps/std/images/default/local/daejeon/logo_local.gif"
+                width="235"
+                height="39"
+                alt="대전시 상수도사업본부 첫 화면으로 이동"
+            /></a>
+          </h1>
+          <p class="slogan">
+            <img
+              src="/wps/std/images/default/local/daejeon/../wdata/txt_slogan.jpg"
+              alt="안전한 수돗물은 파란세상을 꿈꾸게 합니다."
+              width="198"
+              height="11"
+            />
+          </p>
+          <p class="siteUrl">
+            <a href="http://www.waternow.go.kr"
+              ><img
+                src="/wps/std/images/default/local/daejeon/../wdata/txt_url.jpg"
+                alt="www.waternow.go.kr"
+                width="110"
+                height="11"
+            /></a>
+          </p>
+          <!-- //2012.10.24 시안 변경으로 수정처리 -->
+        </div>
+      </div>
+      <div id="conWrap">
+        <div id="container">
+          <!-- main contents start -->
+          <div id="contents">
+            <div id="contents_box">
+              <div class="map">
+                <div
+                  class="map_point map_point_no1_good"
+                  id="map_point_no1"
+                  onmouseover="rolloverPoint('1',2,'good')"
+                  onmouseout="rolloutPoint('1',2,'good')"
+                >
+                  <div id="point_tag" class="type2">
+                    <table>
+                      <caption>
+                        신탄진정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0201RC00">0.55</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0201PH00">7.2</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0201TURB">0.04</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div id="point_tag_over" class="type2">
+                    <table>
+                      <caption>
+                        신탄진정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0201RC00">0.55</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0201PH00">7.2</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0201TURB">0.04</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div
+                  class="map_point map_point_no2_good"
+                  id="map_point_no2"
+                  onmouseover="rolloverPoint('2',3,'good')"
+                  onmouseout="rolloutPoint('2',3,'good')"
+                >
+                  <div id="point_tag" class="type3">
+                    <table>
+                      <caption>
+                        송촌정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0301RC00"></span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0301PH00"></span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0301TURB"></span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div id="point_tag_over" class="type3">
+                    <table>
+                      <caption>
+                        송촌정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0301RC00"></span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0301PH00"></span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0301TURB"></span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div
+                  class="map_point map_point_no3_good"
+                  id="map_point_no3"
+                  onmouseover="rolloverPoint('3',3,'good')"
+                  onmouseout="rolloutPoint('3',3,'good')"
+                >
+                  <div id="point_tag" class="type3">
+                    <table>
+                      <caption>
+                        송촌정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0302RC00">0.66</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0302PH00">7.1</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0302TURB">0.05</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div id="point_tag_over" class="type3">
+                    <table>
+                      <caption>
+                        송촌정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0302RC00">0.66</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0302PH00">7.1</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0302TURB">0.05</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div
+                  class="map_point map_point_no4_good"
+                  id="map_point_no4"
+                  onmouseover="rolloverPoint('4',1,'good')"
+                  onmouseout="rolloutPoint('4',1,'good')"
+                >
+                  <div id="point_tag" class="type1">
+                    <table>
+                      <caption>
+                        월평정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0101RC00">0.69</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0101PH00">6.9</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0101TURB">0.06</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div id="point_tag_over" class="type1">
+                    <table>
+                      <caption>
+                        월평정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0101RC00">0.69</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0101PH00">6.9</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0101TURB">0.06</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div
+                  class="map_point map_point_no5_good"
+                  id="map_point_no5"
+                  onmouseover="rolloverPoint('5',1,'good')"
+                  onmouseout="rolloutPoint('5',1,'good')"
+                >
+                  <div id="point_tag" class="type1">
+                    <table>
+                      <caption>
+                        월평정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0102RC00">0.69</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0102PH00">6.9</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0102TURB">0.06</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div id="point_tag_over" class="type1">
+                    <table>
+                      <caption>
+                        월평정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0102RC00">0.69</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0102PH00">6.9</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0102TURB">0.06</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <div
+                  class="map_point map_point_no6_good"
+                  id="map_point_no6"
+                  onmouseover="rolloverPoint('6',1,'good')"
+                  onmouseout="rolloutPoint('6',1,'good')"
+                >
+                  <div id="point_tag" class="type1">
+                    <table>
+                      <caption>
+                        월평정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0103RC00">0.69</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0103PH00">6.9</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0103TURB">0.06</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div id="point_tag_over" class="type1">
+                    <table>
+                      <caption>
+                        월평정수장 ( 정상 )
+                      </caption>
+                      <tr>
+                        <th>잔류염소</th>
+                        <td class="data"><span id="DJ0103RC00">0.69</span></td>
+                        <td>㎎/L</td>
+                      </tr>
+                      <tr>
+                        <th>pH</th>
+                        <td class="data"><span id="DJ0103PH00">6.9</span></td>
+                        <td>&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <th>탁도</th>
+                        <td class="data"><span id="DJ0103TURB">0.06</span></td>
+                        <td>NTU</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+
+                <dl class="legend">
+                  <dt>수질기준</dt>
+                  <dd>잔류염소 : 4mg/L 이하</dd>
+                  <dd>수소이온농도(PH) : 5.8 ~ 8.5</dd>
+                  <dd>탁도 : 0.5 NTU 이하</dd>
+                </dl>
+                <dl class="legend2">
+                  <dd class="point_0">정상</dd>
+                  <dd class="point_1">비정상</dd>
+                  <dd class="point_2">점검중</dd>
+                </dl>
+              </div>
+
+              <p>
+                실시간으로 공개되는 수질자료는 최종인증을 받기 전의 자료입니다.
+                (갱신시간 : <span id="update_time">2022/12/09 12:48:18</span>)
+                <a
+                  href="/wps/std/main.do"
+                  class="button icon reload"
+                  id="loginOK"
+                  >데이터갱신</a
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- main contents end -->
+    </div>
+
+    <div id="footer">
+      <div id="footer_wrapper">
+        <ul id="banner">
+          <li>
+            <a href="http://www.me.go.kr" target="_blank"
+              ><img
+                src="/wps/std/images/default/local/daejeon/../wdata/banner1.gif"
+                width="97"
+                height="26"
+                alt="환경부"
+            /></a>
+          </li>
+          <li>
+            <a href="http://www.keco.or.kr" target="_blank"
+              ><img
+                src="/wps/std/images/default/local/daejeon/../wdata/banner2.gif"
+                width="101"
+                height="30"
+                alt="한국환경공단"
+            /></a>
+          </li>
+          <li>
+            <a href="http://www.waternow.go.kr" target="_blank"
+              ><img
+                src="/wps/std/images/default/local/daejeon/../wdata/banner5.gif"
+                width="161"
+                height="34"
+                alt="국가상수도정보시스템"
+            /></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
